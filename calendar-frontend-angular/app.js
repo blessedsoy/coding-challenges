@@ -33,11 +33,8 @@ app.controller("calendar", function($scope, $http, $q, $timeout) {
                     }else {
                         $scope.events_obj[item.start_day].push(item);
                     }
-                    
-
                 }
             })
-
             makeCalendar();
         })
     }
@@ -56,43 +53,6 @@ app.controller("calendar", function($scope, $http, $q, $timeout) {
         }
     }
 
-        $scope.select = function(day) {
-            $scope.chosen = day;
-            $scope.selected = day.date;   
-        };    
-
-
-    function makeCalendar () {
-        
-        $scope.selected = _removeTime($scope.selected || moment());
-        $scope.month = $scope.selected.clone();
-        
-        var start = $scope.selected.clone();
-        start.date(1);
-
-        _removeTime(start.day(0));
-
-        _buildMonth($scope, start, $scope.month);
-
-
-
-        $scope.next = function() {
-            var next = $scope.month.clone();
-            _removeTime(next.month(next.month()+1)).date(1);
-            $scope.month.month($scope.month.month()+1);
-            _buildMonth($scope, next, $scope.month);
-        };
-
-        $scope.previous = function() {
-            var previous = $scope.month.clone();
-            _removeTime(previous.month(previous.month()-1).date(1));
-            $scope.month.month($scope.month.month()-1);
-            _buildMonth($scope, previous, $scope.month);
-        };
-              
-    }
-
-
     function getEvents (address) {
         var qEvents = $q.defer();
 
@@ -103,20 +63,57 @@ app.controller("calendar", function($scope, $http, $q, $timeout) {
         });
 
         return qEvents.promise;
+    }    
+
+
+    function makeCalendar () {
+    
+        $scope.selected = _removeTime($scope.selected || moment());
+        
+        $scope.month = $scope.selected.clone();
+        
+        var start = $scope.selected.clone();
+        console.log(start);
+        
+        start.date(1);
+        
+        _removeTime(start.day(0));    
+        _buildMonth(start, $scope.month);
+
+        $scope.next = function() {
+            var next = $scope.month.clone();
+            next.month(next.month()+1);
+            next.date(1);
+            _removeTime(next.day(0));    
+            $scope.month.month($scope.month.month()+1);
+            _buildMonth(next, $scope.month);
+        };
+
+        $scope.previous = function() {
+            var previous = $scope.month.clone();
+            previous.month(previous.month()-1);
+            previous.date(1);
+            _removeTime(previous.day(0));
+            // _removeTime(previous.month(previous.month()-1).date(1));
+            $scope.month.month($scope.month.month()-1);
+            _buildMonth(previous, $scope.month);
+        };
+              
     }
+
 
 
     function _removeTime(date) {
         return date.day(0).hour(0).minute(0).second(0).millisecond(0);
     }
 
-    function _buildMonth(scope, start, month) {
-        scope.weeks = [];
+    function _buildMonth(start, month) {
+        $scope.weeks = [];
         var done = false, date = start.clone(), monthIndex = date.month(), count = 0;
 
         
         while (!done) {
-            scope.weeks.push({ days: _buildWeek(date.clone(), month) });
+            $scope.weeks.push({ days: _buildWeek(date.clone(), month) });
             date.add(1, "w");
             done = count++ > 2 && monthIndex !== date.month();
             monthIndex = date.month();
@@ -126,7 +123,6 @@ app.controller("calendar", function($scope, $http, $q, $timeout) {
     function _buildWeek(date, month) {
         var days = [];
         for (var i = 0; i < 7; i++) {
-
             var temp = {
                 name: date.format("dd").substring(0, 1),
                 number: date.date(),
@@ -145,7 +141,14 @@ app.controller("calendar", function($scope, $http, $q, $timeout) {
             date.add(1, "d");
         }
         return days;
-    }  
+    } 
+
+
+    $scope.select = function(day) {
+        $scope.chosen = day;
+        $scope.selected = day.date;   
+    };    
+  
              
     $scope.addFormSubmit = function () {
         makeCorrectDate();
